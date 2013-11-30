@@ -20,4 +20,4 @@ results = sparql.query().convert()
 
 
 for result in results["results"]["bindings"]:
-    print("film_title=" + result["film_title"]["value"] + "\nstar_name=" + result["star_name"]["value"])
+    print("film_title = " + result["film_title"]["value"] + "\nstar_name = " + result["star_name"]["value"])
