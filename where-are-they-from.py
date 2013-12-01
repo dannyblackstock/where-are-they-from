@@ -30,7 +30,7 @@ with open(itunesLibraryPath) as itunesLibraryXML:
             # clean the string
             artistName = cleanItunesArtistString(artistName)
 
-            # add artist to the list
+            # add artist to the list, if it's not already
             if artistName not in artistList:
                 artistList.append(artistName)
 
@@ -42,8 +42,6 @@ for artist in artistList:
 
     # insert underscores to retrieve proper DBpedia page
     artist = artist.replace (" ", "_")
-
-    # query for a certain band
 
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
 
@@ -59,9 +57,9 @@ for artist in artistList:
         LIMIT 5
     """)
     sparql.setReturnFormat(JSON)
-
-    # convert results to a list of dictionaries and stuff
     
+    # TO-DO: try different forms of the string (eg. lower case "the" and "and")    
+
     try:
         results = sparql.query().convert()
 
@@ -81,4 +79,3 @@ for artist in artistList:
 
     except:
         print("No location found for "+artist+"\n")
-
