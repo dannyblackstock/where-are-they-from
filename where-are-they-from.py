@@ -4,7 +4,7 @@ from os.path import expanduser
 # to parse DBPedia SPARQL
 from SPARQLWrapper import SPARQLWrapper, JSON
 
-def cleanArtistString(artistName):
+def cleanItunesArtistString(artistName):
 
     #clean the string
     artistName = artistName.replace("<key>Artist</key><string>", "")
@@ -15,52 +15,74 @@ def cleanArtistString(artistName):
     artistName = artistName.strip()
     return artistName
 
-
-
 # path to user iTunes Library XML
 itunesLibraryPath = expanduser("~/Music/iTunes/iTunes Music Library.xml")
 
 artistList = []
 
-with open(itunesLibraryPath) as search:
+with open(itunesLibraryPath) as itunesLibraryXML:
     
-    for line in search:
+    for line in itunesLibraryXML:
         
         if "<key>Artist</key>" in line:
             artistName = line
 
             # clean the string
-            artistName = cleanArtistString(artistName)
+            artistName = cleanItunesArtistString(artistName)
 
             # add artist to the list
             if artistName not in artistList:
                 artistList.append(artistName)
 
+# sort in alphabetical order
 artistList.sort()
 print(artistList)
 
-# to do origin and birthplace wikipedia
-
+# query for a certain band
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+
+# sparql.setQuery("""
+#     PREFIX property: <http://dbpedia.org/property/>
+#     PREFIX dbpedia: <http://dbpedia.org/resource/>
+    
+#     SELECT DISTINCT ?band_name ?band_origin
+#     WHERE {
+#     dbpedia:U2 foaf:name ?band_name .
+#     dbpedia:U2 property:origin ?band_origin .
+#     }
+#     LIMIT 5
+# """)
+
+testArtist= "Green_Day"
+
 sparql.setQuery("""
     PREFIX property: <http://dbpedia.org/property/>
     PREFIX dbpedia: <http://dbpedia.org/resource/>
     
     SELECT DISTINCT ?band_name ?band_origin
     WHERE {
-    dbpedia:Aidan_Knight foaf:name ?band_name .
-    dbpedia:Aidan_Knight property:origin ?band_origin .
+    dbpedia:"""+testArtist+""" foaf:name ?band_name .
+    dbpedia:"""+testArtist+""" property:origin ?band_origin .
     }
     LIMIT 5
 """)
 sparql.setReturnFormat(JSON)
+
+# convert results to a list of dictionaries and stuff
 results = sparql.query().convert()
 
-print "\n\n"
-print(results["results"]["bindings"][-1]["band_name"]["value"])
-print(results["results"]["bindings"][-1]["band_origin"]["value"])
-print "\n\n"
-
+# print all the results
 for result in results["results"]["bindings"]:
     print("band_name = " + result["band_name"]["value"] + "\nband_origin = " + result["band_origin"]["value"] + "\n")
+
+bandName = results["results"]["bindings"][-1]["band_name"]["value"]
+bandOrigin = results["results"]["bindings"][-1]["band_origin"]["value"]
+
+# clean up origin string if it's a URL
+if "http://dbpedia.org/resource/" in bandOrigin:
+    bandOrigin = bandOrigin.replace("http://dbpedia.org/resource/", "")
+    bandOrigin = bandOrigin.replace("_", " ")
+
+print bandName + "\n" + bandOrigin + "\n"
+
