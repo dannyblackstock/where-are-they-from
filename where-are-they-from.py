@@ -1,6 +1,8 @@
 # to get user path on all operating systems
 from os.path import expanduser
 
+# to parse DBPedia SPARQL
+from SPARQLWrapper import SPARQLWrapper, JSON
 
 def cleanArtistString(artistName):
 
@@ -38,7 +40,7 @@ artistList.sort()
 print(artistList)
 
 # to do origin and birthplace wikipedia
-from SPARQLWrapper import SPARQLWrapper, JSON
+
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
 sparql.setQuery("""
@@ -47,15 +49,18 @@ sparql.setQuery("""
     
     SELECT DISTINCT ?band_name ?band_origin
     WHERE {
-    dbpedia:U2 foaf:name ?band_name .
-    dbpedia:U2 property:origin ?band_origin .
+    dbpedia:Aidan_Knight foaf:name ?band_name .
+    dbpedia:Aidan_Knight property:origin ?band_origin .
     }
     LIMIT 5
 """)
 sparql.setReturnFormat(JSON)
 results = sparql.query().convert()
 
-print(results["results"]["bindings"])
+print "\n\n"
+print(results["results"]["bindings"][-1]["band_name"]["value"])
+print(results["results"]["bindings"][-1]["band_origin"]["value"])
+print "\n\n"
 
 for result in results["results"]["bindings"]:
     print("band_name = " + result["band_name"]["value"] + "\nband_origin = " + result["band_origin"]["value"] + "\n")
