@@ -38,51 +38,47 @@ with open(itunesLibraryPath) as itunesLibraryXML:
 artistList.sort()
 print(artistList)
 
-# query for a certain band
+for artist in artistList:
 
-sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+    # insert underscores to retrieve proper DBpedia page
+    artist = artist.replace (" ", "_")
 
-# sparql.setQuery("""
-#     PREFIX property: <http://dbpedia.org/property/>
-#     PREFIX dbpedia: <http://dbpedia.org/resource/>
+    # query for a certain band
+
+    sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+
+    sparql.setQuery("""
+        PREFIX property: <http://dbpedia.org/property/>
+        PREFIX dbpedia: <http://dbpedia.org/resource/>
+        
+        SELECT DISTINCT ?band_name ?band_origin
+        WHERE {
+        dbpedia:"""+artist+""" foaf:name ?band_name .
+        dbpedia:"""+artist+""" property:origin ?band_origin .
+        }
+        LIMIT 5
+    """)
+    sparql.setReturnFormat(JSON)
+
+    # convert results to a list of dictionaries and stuff
     
-#     SELECT DISTINCT ?band_name ?band_origin
-#     WHERE {
-#     dbpedia:U2 foaf:name ?band_name .
-#     dbpedia:U2 property:origin ?band_origin .
-#     }
-#     LIMIT 5
-# """)
+    try:
+        results = sparql.query().convert()
 
-testArtist= "Green_Day"
+        # print all the results
+        # for result in results["results"]["bindings"]:
+        #     print("band_name = " + result["band_name"]["value"] + "\nband_origin = " + result["band_origin"]["value"] + "\n")
 
-sparql.setQuery("""
-    PREFIX property: <http://dbpedia.org/property/>
-    PREFIX dbpedia: <http://dbpedia.org/resource/>
-    
-    SELECT DISTINCT ?band_name ?band_origin
-    WHERE {
-    dbpedia:"""+testArtist+""" foaf:name ?band_name .
-    dbpedia:"""+testArtist+""" property:origin ?band_origin .
-    }
-    LIMIT 5
-""")
-sparql.setReturnFormat(JSON)
+        bandName = results["results"]["bindings"][-1]["band_name"]["value"]
+        bandOrigin = results["results"]["bindings"][-1]["band_origin"]["value"]
 
-# convert results to a list of dictionaries and stuff
-results = sparql.query().convert()
+        # clean up origin string if it's a URL
+        if "http://dbpedia.org/resource/" in bandOrigin:
+            bandOrigin = bandOrigin.replace("http://dbpedia.org/resource/", "")
+            bandOrigin = bandOrigin.replace("_", " ")
 
-# print all the results
-for result in results["results"]["bindings"]:
-    print("band_name = " + result["band_name"]["value"] + "\nband_origin = " + result["band_origin"]["value"] + "\n")
+        print bandName + "\n" + bandOrigin + "\n"
 
-bandName = results["results"]["bindings"][-1]["band_name"]["value"]
-bandOrigin = results["results"]["bindings"][-1]["band_origin"]["value"]
-
-# clean up origin string if it's a URL
-if "http://dbpedia.org/resource/" in bandOrigin:
-    bandOrigin = bandOrigin.replace("http://dbpedia.org/resource/", "")
-    bandOrigin = bandOrigin.replace("_", " ")
-
-print bandName + "\n" + bandOrigin + "\n"
+    except:
+        print("No location found for "+artist+"\n")
 
