@@ -42,22 +42,20 @@ from SPARQLWrapper import SPARQLWrapper, JSON
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
 sparql.setQuery("""
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-    PREFIX foaf: <http://xmlns.com/foaf/0.1/>
     PREFIX property: <http://dbpedia.org/property/>
-
+    PREFIX dbpedia: <http://dbpedia.org/resource/>
+    
     SELECT DISTINCT ?band_name ?band_origin
     WHERE {
-    ?band_name rdf:type <http://dbpedia.org/ontology/Band> .
-    ?band_name foaf:name ?locationCity .
-    ?band_name property:origin ?band_origin
+    dbpedia:U2 foaf:name ?band_name .
+    dbpedia:U2 property:origin ?band_origin .
     }
     LIMIT 5
 """)
 sparql.setReturnFormat(JSON)
 results = sparql.query().convert()
 
+print(results["results"]["bindings"])
 
 for result in results["results"]["bindings"]:
-    print("band_name = " + result["band_name"]["value"] + "\n band_origin = " + result["band_origin"]["value"] + "\n")
+    print("band_name = " + result["band_name"]["value"] + "\nband_origin = " + result["band_origin"]["value"] + "\n")
