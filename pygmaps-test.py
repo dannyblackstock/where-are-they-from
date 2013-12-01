@@ -1,5 +1,7 @@
 import pygmaps
 import webbrowser
+import os
+
 mymap = pygmaps.maps(37.428, -122.145, 16)
 mymap.setgrids(37.42, 37.43, 0.001, -122.15, -122.14, 0.001)
 mymap.addpoint(37.427, -122.145, "#0000FF")
@@ -8,4 +10,7 @@ path = [(37.429, -122.145),(37.428, -122.145),(37.427, -122.145),(37.427, -122.1
 mymap.addpath(path,"#00FF00")
 mymap.draw('./mymap.draw.html')
 url = './mymap.draw.html'
-webbrowser.open(url, new=0, autoraise=True)
+
+fn = "file://" + os.path.join(os.path.dirname(__file__), 'mymap.draw.html')
+
+webbrowser.open(fn, new=0, autoraise=True)
