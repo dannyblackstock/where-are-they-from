@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+    <html>
+      <head>
+        <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+        <meta charset="utf-8">
+        <title>Geocoding service</title>
+        <style>
+          html, body, #map-canvas {
+            height: 100%;
+            margin: 0px;
+            padding: 0px
+          }
+          #panel {
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            margin-left: -180px;
+            z-index: 5;
+            background-color: #fff;
+            padding: 5px;
+            border: 1px solid #999;
+          }
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0naflfoGrRdLeyRnCeKQiZODwMkrDAwQ&sensor=false"></script>
+        <script>
+            var geocoder;
+            var map;
+
+            var temp = ['1667 Balvaird Dr, Lawrenceville, GA 30045', '4158 Oak Crest Drive, Tucker, GA 30084', '1736 Defoor Pl, Atlanta, GA 30318'];
+            var initCenter = new google.maps.LatLng(40, 0); //center but we don't really need to see Antarctica
+
+            var infowindow = new google.maps.InfoWindow({
+                content: ""
+            });
+            function initialize() {
+              geocoder = new google.maps.Geocoder();
+              var mapOptions = {
+                zoom: 2,
+                center: initCenter
+              }
+              map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+            }
+
+            function codeAddress() {
+              var address = document.getElementById('address').value;
+              geocoder.geocode( { 'address': address}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                  map.setCenter(results[0].geometry.location);
+                  var marker = new google.maps.Marker({
+                      map: map,
+                      position: results[0].geometry.location
+                  });
+                } else {
+                  alert('Geocode was not successful for the following reason: ' + status);
+                }
+              });
+            }
+
+
+            function createMarkers() {
+                for (var i = 0; i < temp.length; ++i) {
+                    (function(address) {
+                        geocoder.geocode({'address': address}, function(results, status) {
+                            if (status == google.maps.GeocoderStatus.OK) {
+                                var marker = new google.maps.Marker({
+                                    map: map,
+                                    position: results[0].geometry.location,
+                                    animation: google.maps.Animation.DROP,
+                                    title: address
+                                });
+
+                                google.maps.event.addListener(marker, 'click', function() {
+                                    infowindow.setContent(address);
+                                    infowindow.open(map,marker);
+                                    //window.open('infomonde.php?icao=' + address + '&language=fr', 'Informations météo', config = 'height=400, width=850, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, directories=no, status=no')
+                                });
+                            }
+
+                            else {
+                              alert('Geocode for ' + address + ' was not successful for the following reason: ' + status);
+                            }
+                        });
+                    })(temp[i]);
+                }
+            }
+
+            google.maps.event.addDomListener(window, 'load', initialize);
+        </script>
+      </head>
+      <body>
+        <div id="panel">
+          <input id="address" type="textbox" value="Sydney, NSW">
+          <input type="button" value="Geocode" onclick="createMarkers()">
+        </div>
+        <div id="map-canvas"></div>
+      </body>
+    </html>
