@@ -1,3 +1,10 @@
+$def with (greeting)
+
+$if greeting:
+    I just wanted to say <em style="color: green; font-size: 2em;">$greeting</em>.
+$else:
+    <em>Hello</em>, world!
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
     <html>
       <head>
@@ -33,6 +40,7 @@
             var infowindow = new google.maps.InfoWindow({
                 content: ""
             });
+
             function initialize() {
               geocoder = new google.maps.Geocoder();
               var mapOptions = {
