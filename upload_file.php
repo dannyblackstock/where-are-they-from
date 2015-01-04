@@ -95,18 +95,29 @@ if ((($_FILES["file"]["type"] == "application/xml")
       echo "<h1>" . $artist . "</h1><br>";
 
       $origin = "";
-      $res = $mysqli->query("SELECT * FROM `artist_locations` WHERE `artist` = ".$artist);
+      $tempQuery = "SELECT * FROM `artist_locations` WHERE `artist` = \"".$artist."\"";
+      echo "Query: ".$tempQuery."<br>";
+      $res = $mysqli->query($tempQuery);
 
       // if the artist wasn't found in the database, check dbpedia for their origin and add them to the database.
-      if(empty($res)) {
+      if($res->num_rows < 1) {
         echo $artist . " was not in the database! Adding now...<br>";
 
         $underscoreArtist = str_replace(" ", "_", $artist);
         $lowerCaseAnd =  str_replace("And", "and", $underscoreArtist);
+        $noAmpersandLowercase =  str_replace("&", "and", $underscoreArtist);
+        $noAmpersandUppercase =  str_replace("&", "And", $underscoreArtist);
         $upperCaseWords = ucwords(strtolower($underscoreArtist));
         
         // try a few different combinations of names
-        $artistNames = [$underscoreArtist, $upperCaseWords, $underscoreArtist . "_(band)", $upperCaseWords . "_(band)", $underscoreArtist . "_(musician)", $lowerCaseAnd];
+        $artistNames = [$underscoreArtist,
+                        $upperCaseWords,
+                        $underscoreArtist . "_(band)",
+                        $upperCaseWords . "_(band)",
+                        $underscoreArtist . "_(musician)",
+                        $lowerCaseAnd,
+                        $noAmpersandLowercase,
+                        $noAmpersandUppercase];
 
         // look for the birth place or origin of the artist on dbpedia
         for ($i = 0; $i <= (count($artistNames)-1); $i++) {
@@ -153,13 +164,25 @@ if ((($_FILES["file"]["type"] == "application/xml")
                   $origin = utf8_decode(urldecode($origin));
 
                   echo $origin . " ";
+                  
+                // $originGeocodeFormat = 
+                // $geocode=file_get_contents("http://maps.google.com/maps/api/geocode/json?address="Victoria+Canada"&sensor=false");
+
+                // $output= json_decode($geocode);
+
+                // $lat = $output->results[0]->geometry->location->lat;
+                // $lng = $output->results[0]->geometry->location->lng;
+
+                // echo $lat . " " . $lng;
                 }
               }
+
               // if a query for the artist's origin is successful, stop looping
               break;
             }
           }
         }
+
         // insert into the database
         $res = $mysqli->query("INSERT INTO `artist_locations`(`artist`, `origin`, `latitude`, `longitude`) VALUES (\"".$artist."\",\"".$origin."\",\"\",\"\")");
         if ($res) {
@@ -180,6 +203,5 @@ if ((($_FILES["file"]["type"] == "application/xml")
 else {
   echo "Invalid file";
 }
-
 
 ?>
